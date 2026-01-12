@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            background: #fff;
+            padding: 20px;
+            margin: auto;
+            border-radius: 5px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input, select, button {
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #eee;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+        }
+
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .total {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Expense Tracker</h1>
+
+    <form id="expense-form">
+        <input type="text" id="description" placeholder="Description" required>
+        <input type="number" id="amount" placeholder="Amount" required>
+        <select id="category">
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Entertainment">Entertainment</option>
+        </select>
+        <button type="submit">Add Expense</button>
+    </form>
+
+    <ul id="expense-list"></ul>
+
+    <div class="total">
+        Total: $<span id="total">0.00</span>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById("expense-form");
+    const expenseList = document.getElementById("expense-list");
+    const totalElement = document.getElementById("total");
+
+    let expenses = [];
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const description = document.getElementById("description").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const category = document.getElementById("category").value;
+
+        const expense = {
+            id: Date.now(),
+            description,
+            amount,
+            category
+        };
+
+        expenses.push(expense);
+        renderExpenses();
+        form.reset();
+    });
+
+    function renderExpenses() {
+        expenseList.innerHTML = "";
+        let total = 0;
+
+        expenses.forEach(expense => {
+            total += expense.amount;
+
+            const li = document.createElement("li");
+            li.innerHTML = `
+                ${expense.description} (${expense.category}) - $${expense.amount.toFixed(2)}
+                <button class="delete-btn" onclick="deleteExpense(${expense.id})">X</button>
+            `;
+
+            expenseList.appendChild(li);
+        });
+
+        totalElement.textContent = total.toFixed(2);
+    }
+
+    function deleteExpense(id) {
+        expenses = expenses.filter(expense => expense.id !== id);
+        renderExpenses();
+    }
+</script>
+
+</body>
+</html>

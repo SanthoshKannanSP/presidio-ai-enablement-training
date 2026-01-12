@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        checkbox {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .delete-btn {
+            background-color: #ff4444;
+            color: white;
+            padding: 6px 15px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Expense Tracker</h2>
+        
+        <div class="input-group">
+            <label for="description">Description:</label><br>
+            <textarea id="description" rows="3"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="amount">Amount: $</label><br>
+            <input type="number" id="amount" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="categories">Categories:</label><br>
+            <div id="categories-select"></div>
+        </div>
+
+        <button onclick="addExpense()">Add Expense</button>
+
+        <h4>Expenses List:</h4>
+        <table id="expensesTable">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="expensesBody"></tbody>
+        </table>
+
+        <button onclick="totalExpenses()">Total Spent</button>
+    </div>
+
+    <script>
+        const expenses = [];
+        let total = 0;
+
+        // Expense Adding Functions
+        function addExpense() {
+            const description = document.getElementById('description').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const categories = document.querySelectorAll('input[categories] > label');
+
+            if (description && amount > 0) {
+                const categorySelects = Array.from(categories).map(label => label.value);
+                
+                // Add expense to array
+                expenses.push({
+                    id: Date.now(),
+                    description,
+                    amount,
+                    category: categorySelects[0] || 'Unknown',
+                    timestamp: new Date().toLocaleTimeString()
+                });
+
+                // Update UI elements
+                document.getElementById('description').value = '';
+                document.getElementById('amount').value = '';
+                
+                if (categories.length > 0) {
+                    const catSelect = categories[0];
+                    catSelect.value = categorySelects[0];
+                }
+
+                addToTable();
+            }
+        }
+
+        function addToTable() {
+            const table = document.getElementById('expensesTable');
+            const tbody = document.getElementById('expensesBody');
+            
+            let rows = tbody.children;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i] = null;
+            }
+
+            expenses.forEach(expense => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${expense.description}</td>
+                    <td>${expense.category}</td>
+                    <td>$${expense.amount.toFixed(2)}</td>
+                `;
+                row.dataset.id = expense.id;
+                
+                // Edit button
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-btn';
+                editBtn.textContent = `Edit ${expense.description}`;
+                editBtn.onclick = () => editExpense(expense);
+                
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteExpense(expense);
+
+                row.appendChild(editBtn);
+                row.appendChild(deleteBtn);
+                tbody.appendChild(row);
+            });
+        }
+
+        function editExpense(expense) {
+            const tableBody = document.getElementById('expensesBody');
+            const rows = Array.from(tableBody.children).map(row => 
+                row.dataset.id === expense.id ? row : null
+            );
+
+            const descriptionInput = document.createElement('input');
+            descriptionInput.type = 'text';
+            descriptionInput.value = expense.description;
+            descriptionInput.style.width = '100%';
+
+            const amountInput = document.createElement('input');
+            amountInput.type = 'number';
+            amountInput.value = expense.amount;
+            amountInput.style.width = '100%';
+
+            if (expense.category === 'Unknown') {
+                const categorySelects = Array.from(new DOMElement, () => 
+                    document.createElement('label')
+                );
+            } else {
+                const categorySelects = [document.querySelector(`label with id='categories${expense.id}`)];
+            }
+
+            // Update existing row
+            rows.forEach(row => {
+                if (row.dataset.id === expense.id) {
+                    row.innerHTML = `
+                        <td>${descriptionInput.value}</td>
+                        <td>$${amountInput.value}</td>
+                        <td><button onclick="editExpense(${expense})">Edit</button></td>
+                    `;
+                }
+            });
+
+            tableBody.replaceWith(rows);
+        }
+
+        function deleteExpense(expense) {
+            const index = expenses.findIndex(e => e.id === expense.id);
+            if (index !== -1) {
+                expenses.splice(index, 1);
+                
+                // Remove last row from table
+                const rows = document.getElementById('expensesBody').children;
+                for (let i = rows.length - 1; i >= 0; i--) {
+                    if (rows[i].dataset.id === expenses[expenses.length-1].id) {
+                        rows.splice(i, 1);
+                    }
+                }
+
+                // Recalculate total
+                let newTotal = 0;
+                expenses.forEach(e => newTotal += e.amount);
+                total = newTotal;
+
+                document.getElementById('total').textContent = `$${newTotal.toFixed(2)}`;
+            }
+        }
+
+        function deleteLastExpense() {
+            if (expenses.length > 0) {
+                const lastExpense = expenses.pop();
+                
+                // Remove last row from table
+                const rows = document.getElementById('expensesBody').children;
+                for (let i = rows.length - 1; i >= 0; i--) {
+                    if (rows[i].dataset.id === lastExpense.id) {
+                        rows.splice(i, 1);
+                    }
+                }
+
+                // Recalculate total
+                let newTotal = 0;
+                expenses.forEach(e => newTotal += e.amount);
+                total = newTotal;
+
+                document.getElementById('total').textContent = `$${newTotal.toFixed(2)}`;
+            }
+        }
+
+        function totalExpenses() {
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Event Listeners
+        document.getElementById('add-btn').addEventListener('click', addExpense);
+        document.getElementById('delete-btn').addEventListener('click', () => deleteLastExpense());
+        
+        // Initial display of total amount
+        totalExpenses();
+    </script>
+</body>
+</html>

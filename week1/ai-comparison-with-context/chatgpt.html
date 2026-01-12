@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Simple Expense Tracker</title>
+
+    <!-- =====================================================
+         Expense Tracker Application
+         A simple web app to track expenses with categories,
+         total calculation, and delete functionality.
+         ===================================================== -->
+
+    <style>
+        /* ===============================
+           Global Styles & Variables
+           =============================== */
+
+        :root {
+            --spacing-unit: 8px;
+            --color-primary: #2c7be5;
+            --color-danger: #dc3545;
+            --color-background: #f8f9fa;
+            --color-text: #212529;
+            --color-border: #ced4da;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: calc(var(--spacing-unit) * 4);
+        }
+
+        h1 {
+            margin-bottom: calc(var(--spacing-unit) * 2);
+        }
+
+        /* ===============================
+           Layout
+           =============================== */
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: calc(var(--spacing-unit) * 3);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ===============================
+           Form Styles
+           =============================== */
+
+        .expense-form {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--spacing-unit) * 2);
+            margin-bottom: calc(var(--spacing-unit) * 3);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: var(--spacing-unit);
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        button {
+            padding: var(--spacing-unit);
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: var(--color-danger);
+            font-size: 14px;
+        }
+
+        /* ===============================
+           Expense List
+           =============================== */
+
+        .expense-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(var(--spacing-unit) * 2);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .expense-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .expense-category {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .delete-btn {
+            background-color: var(--color-danger);
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            opacity: 0.85;
+        }
+
+        /* ===============================
+           Summary & Empty State
+           =============================== */
+
+        .total-amount {
+            margin-top: calc(var(--spacing-unit) * 2);
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #6c757d;
+            margin-top: calc(var(--spacing-unit) * 2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1>Expense Tracker</h1>
+
+    <!-- ===============================
+         Expense Input Form
+         =============================== -->
+
+    <form class="expense-form" id="expenseForm" novalidate>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" id="description" />
+        </div>
+
+        <div class="form-group">
+            <label for="amount">Amount ($)</label>
+            <input type="number" id="amount" step="0.01" />
+        </div>
+
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="">Select a category</option>
+                <option value="Food">Food</option>
+                <option value="Transport">Transport</option>
+                <option value="Entertainment">Entertainment</option>
+            </select>
+        </div>
+
+        <button type="submit">Add Expense</button>
+        <div class="error-message" id="errorMessage"></div>
+    </form>
+
+    <!-- ===============================
+         Expense List
+         =============================== -->
+
+    <ul class="expense-list" id="expenseList"></ul>
+    <div class="empty-message" id="emptyMessage">No expenses added yet.</div>
+
+    <!-- ===============================
+         Total Amount
+         =============================== -->
+
+    <div class="total-amount" id="totalAmount">$0.00</div>
+</div>
+
+<script>
+    /* ===============================
+       Constants & State
+       =============================== */
+
+    const expenses = [];
+    const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+    });
+
+    /* ===============================
+       DOM Elements
+       =============================== */
+
+    const expenseForm = document.getElementById("expenseForm");
+    const descriptionInput = document.getElementById("description");
+    const amountInput = document.getElementById("amount");
+    const categorySelect = document.getElementById("category");
+    const expenseList = document.getElementById("expenseList");
+    const totalAmountElement = document.getElementById("totalAmount");
+    const errorMessageElement = document.getElementById("errorMessage");
+    const emptyMessageElement = document.getElementById("emptyMessage");
+
+    /* ===============================
+       Event Listeners
+       =============================== */
+
+    expenseForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        addExpense();
+    });
+
+    /* ===============================
+       Functions
+       =============================== */
+
+    /**
+     * Validates form inputs and adds a new expense
+     */
+    const addExpense = () => {
+        const description = descriptionInput.value.trim();
+        const amount = parseFloat(amountInput.value);
+        const category = categorySelect.value;
+
+        if (!validateInputs(description, amount, category)) {
+            return;
+        }
+
+        expenses.push({ description, amount, category });
+        resetForm();
+        renderExpenses();
+    };
+
+    /**
+     * Validates user inputs
+     * @param {string} description
+     * @param {number} amount
+     * @param {string} category
+     * @returns {boolean}
+     */
+    const validateInputs = (description, amount, category) => {
+        if (!description) {
+            showError("Description cannot be empty.");
+            return false;
+        }
+
+        if (isNaN(amount) || amount <= 0) {
+            showError("Amount must be a positive number.");
+            return false;
+        }
+
+        if (!category) {
+            showError("Please select a category.");
+            return false;
+        }
+
+        showError("");
+        return true;
+    };
+
+    /**
+     * Displays an error message
+     * @param {string} message
+     */
+    const showError = (message) => {
+        errorMessageElement.textContent = message;
+    };
+
+    /**
+     * Renders the expense list and total
+     */
+    const renderExpenses = () => {
+        expenseList.innerHTML = "";
+
+        if (expenses.length === 0) {
+            emptyMessageElement.style.display = "block";
+        } else {
+            emptyMessageElement.style.display = "none";
+        }
+
+        expenses.forEach((expense, index) => {
+            const listItem = document.createElement("li");
+            listItem.className = "expense-item";
+
+            listItem.innerHTML = `
+                <div class="expense-details">
+                    <span>${expense.description} - ${CURRENCY_FORMATTER.format(expense.amount)}</span>
+                    <span class="expense-category">${expense.category}</span>
+                </div>
+                <button class="delete-btn">Delete</button>
+            `;
+
+            listItem.querySelector(".delete-btn").addEventListener("click", () => {
+                deleteExpense(index);
+            });
+
+            expenseList.appendChild(listItem);
+        });
+
+        updateTotalAmount();
+    };
+
+    /**
+     * Deletes an expense by index
+     * @param {number} index
+     */
+    const deleteExpense = (index) => {
+        expenses.splice(index, 1);
+        renderExpenses();
+    };
+
+    /**
+     * Updates the total amount display
+     */
+    const updateTotalAmount = () => {
+        const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        totalAmountElement.textContent = CURRENCY_FORMATTER.format(total);
+    };
+
+    /**
+     * Resets the form inputs
+     */
+    const resetForm = () => {
+        descriptionInput.value = "";
+        amountInput.value = "";
+        categorySelect.value = "";
+    };
+</script>
+
+</body>
+</html>

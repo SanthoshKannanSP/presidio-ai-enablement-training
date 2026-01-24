@@ -209,3 +209,6 @@ __marimo__/
 # Additional ignores
 .DS_Store
 chroma_db/
+credentials.json
+token.json
+*/*docs

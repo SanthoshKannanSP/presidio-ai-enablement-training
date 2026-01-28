@@ -16,7 +16,7 @@ def load_system_prompt() -> str:
 system_prompt = load_system_prompt()
 
 base_model = ChatBedrockConverse(
-    model="anthropic.claude-3-haiku-20240307-v1:0"
+    model="anthropic.claude-3-sonnet-20240229-v1:0"
 )
 search_tool = DuckDuckGoSearchRun()
 read_tool = ReadFileTool()

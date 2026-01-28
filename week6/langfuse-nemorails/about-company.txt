@@ -1,0 +1,30 @@
+# About New Tech AI
+
+## Company Overview
+
+New Tech AI is a cutting-edge artificial intelligence company dedicated to transforming businesses through innovative AI solutions and advanced machine learning technologies. Founded with the vision of making AI accessible and impactful for organizations of all sizes, we specialize in developing intelligent systems that drive efficiency, enhance decision-making, and create sustainable competitive advantages.
+
+## What We Do
+
+### AI Strategy & Consulting
+- AI readiness assessment and strategic roadmap development
+- Technology evaluation and implementation planning
+- Change management and AI adoption strategies
+
+### Custom AI Solutions
+- Machine Learning model development and deployment
+- Natural Language Processing (NLP) applications
+- Computer Vision and image recognition systems
+- Predictive analytics and forecasting models
+
+### AI-Powered Products
+- Intelligent automation platforms
+- AI-driven analytics dashboards
+- Conversational AI and chatbot solutions
+- Recommendation engines and personalization systems
+
+### Data Science Services
+- Data engineering and pipeline development
+- Advanced analytics and business intelligence
+- Statistical modeling and data visualization
+- Big data processing and management

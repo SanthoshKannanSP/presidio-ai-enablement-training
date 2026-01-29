@@ -1,0 +1,20 @@
+[project]
+name = "week4"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.4.1",
+    "ddgs>=9.10.0",
+    "fastmcp>=2.14.4",
+    "google-api-python-client>=2.188.0",
+    "google-auth-httplib2>=0.3.0",
+    "google-auth-oauthlib>=1.2.4",
+    "langchain>=1.2.7",
+    "langchain-aws>=1.2.1",
+    "langchain-community>=0.4.1",
+    "langchain-mcp-adapters>=0.2.1",
+    "pypdf2>=3.0.1",
+    "sentence-transformers>=5.2.0",
+]

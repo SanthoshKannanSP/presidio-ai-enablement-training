@@ -6,7 +6,7 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.tools import tool
 
 from utils.vector_db import create_or_get_collection
-from utils.search_utils import get_context_with_sources, semantic_search
+from utils.search_utils import semantic_search
 
 
 @tool
@@ -51,8 +51,8 @@ async def create_bedrock_agent():
         {
             "mcpTool": {
                 "transport": "stdio",
-                "command": "python3.13",
-                "args": ["mcp-server.py"],
+                "command": "uv",
+                "args": ["run","mcp-server.py"],
             }
         }
     )

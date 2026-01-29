@@ -1,10 +1,10 @@
-from utils.agent import bedrock_chat_agent
+from utils.agent import create_bedrock_agent
 import asyncio
 
 history = {"messages":[]}
 
 async def chat():
-    agent = await bedrock_chat_agent()
+    agent = await create_bedrock_agent()
     
     print("Presidio AI Agent")
     user_query = input(">>>").strip()
